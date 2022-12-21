@@ -1,16 +1,14 @@
 library(tidyverse)
 library(ggplot2)
 library(gridExtra)
+library(ggheatmap)
+library(ecr)
 
 # ANALYSE EMOA INDICATORS
 # ===
 #
 # This script imports the performance data, calculates ranks and pairwise comparisons.
 #
-
-
-devtools::load_all("~/repos/software/r/ecr2")
-devtools::load_all("~/repos/software/r/ggheatmap")
 
 source("src/defs.R")
 
@@ -33,8 +31,6 @@ res.final.long.aggr = res.final.long %>%
   group_by(algorithm, prob, indicator, class) %>%
   dplyr::summarize(mean = mean(value), median = median(value), sd = sd(value)) %>%
   ungroup()
-
-#FIXME: show large table? Maybe in appendix?
 
 # now add ranking
 res.final.long.aggr = res.final.long.aggr %>%
@@ -129,6 +125,29 @@ pl = pl + theme(axis.text.x = element_text(hjust = 1, angle = 45), legend.positi
 pl = pl + labs(fill = "Fraction of signifcant tests")
 pl = pl + geom_vline(xintercept = c(1.5, 4.5), color = "white", size = 0.8)
 pl = pl + geom_hline(yintercept = c(1.5, 4.5), color = "white", size = 0.8)
-pl
+#pl
 ggsave("figures/benchmark/pwtests_HV.pdf", plot = pl, width = 8, height = 8, device = cairo_pdf, limitsize = FALSE)
+
+
+pl = ggheatmap(filter(pwcomp.aggr, measure == "EPS"), id.vars=c("algo1", "algo2"), value.name = "value", show.values = TRUE, value.size = 2.0)
+pl = pl + viridis::scale_fill_viridis(end = 0.75, alpha = 0.8)
+pl = pl + theme_minimal()
+pl = pl + facet_wrap(. ~ class, nrow = 2L)
+pl = pl + theme(axis.text.x = element_text(hjust = 1, angle = 45), legend.position = "top")
+pl = pl + labs(fill = "Fraction of signifcant tests")
+pl = pl + geom_vline(xintercept = c(1.5, 4.5), color = "white", size = 0.8)
+pl = pl + geom_hline(yintercept = c(1.5, 4.5), color = "white", size = 0.8)
+#pl
+ggsave("figures/benchmark/pwtests_EPS.pdf", plot = pl, width = 8, height = 8, device = cairo_pdf, limitsize = FALSE)
+
+pl = ggheatmap(filter(pwcomp.aggr, measure == "DeltaP"), id.vars=c("algo1", "algo2"), value.name = "value", show.values = TRUE, value.size = 2.0)
+pl = pl + viridis::scale_fill_viridis(end = 0.75, alpha = 0.8)
+pl = pl + theme_minimal()
+pl = pl + facet_wrap(. ~ class, nrow = 2L)
+pl = pl + theme(axis.text.x = element_text(hjust = 1, angle = 45), legend.position = "top")
+pl = pl + labs(fill = "Fraction of signifcant tests")
+pl = pl + geom_vline(xintercept = c(1.5, 4.5), color = "white", size = 0.8)
+pl = pl + geom_hline(yintercept = c(1.5, 4.5), color = "white", size = 0.8)
+#pl
+ggsave("figures/benchmark/pwtests_DeltaP.pdf", plot = pl, width = 8, height = 8, device = cairo_pdf, limitsize = FALSE)
 

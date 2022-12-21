@@ -26,8 +26,8 @@ tbl$prob = sapply(strsplit(tbl$prob, "_"), function(el) {
   el[length(el)]
 })
 tbl$prob = as.integer(gsub(".graph", "", tbl$prob))
-tbl = filter(tbl, n >= 100) %>%
-  select(class, n, prob, algorithm, HV, EPS)
+tbl = select(tbl, class, n, prob, algorithm, HV, EPS)
+ns = unique(tbl$n)
 
 tbl$algorithm2 = factor(tbl$algorithm, levels = algo.names, ordered = TRUE)
 tbl = arrange(tbl, algorithm2)
@@ -55,37 +55,19 @@ tbl.merged$mean.EPS3 = sprintf("%s $\\pm$ %.2f", tbl.merged$mean.EPS3, tbl.merge
 tbl.merged$mean.EPS4 = sprintf("%s $\\pm$ %.2f", tbl.merged$mean.EPS4, tbl.merged$sd.EPS4)
 tbl.merged$sd.HV = tbl.merged$sd.HV2 = tbl.merged$sd.HV3 = tbl.merged$sd.HV4 = tbl.merged$sd.EPS = tbl.merged$sd.EPS2 = tbl.merged$sd.EPS3 = tbl.merged$sd.EPS4 = NULL
 
-# n = 100
-
-ktbl = to_latex(
-  filter(tbl.merged, n == 100),
-  reps = 2L,
-  param.col.names = c("", "$n$", "$I$"),
-  measure.col.names = c("\\textbf{mean $\\pm$ sd}", "\\textbf{stat}"),
-  algo.names = c("UNIF", "1BEX", "SGS", "USGS"),
-  algo.colors = algo.colors,
-  caption = "Mean, standard deviation~(\\textbf{sd}) and results of Wilcoxon-Mann-Whitney tests at significance level $\\alpha=0.01$ (\\textbf{stat}) with respect to HV-indicator and $\\varepsilon$-indicator respectively. Data is shown for all instances with at least 100 nodes. The \\textbf{stat}-column is to be read as follows: a value $X^{+}$ indicates that the indicator for the column algorithm (note that algorithms are numbered and color-encoded in the second row) is significantly lower than the one of algorithm $X$. Lowest indicator values are highlighted in \\textbf{bold-face}.") %>%
-  kable_styling() %>%
-  #row_spec(row = c(10, 20, 30, 70), extra_latex_after = "\\cmidrule{2-19}") %>%
-  collapse_rows(columns = 1, latex_hline = "major", valign = "middle") %>%
-  add_header_above(c(" ", " ", " ", "HV-indicator" = 8, "$\\\\varepsilon$-indicator" = 8), bold = TRUE, escape = FALSE)
-preview(ktbl)
-cat(ktbl, file = "tables/indicators_n_100.tex")
-
-
-# n = 250
-
-ktbl = to_latex(
-  filter(tbl.merged, n == 250),
-  reps = 2L,
-  param.col.names = c("", "$n$", "$I$"),
-  measure.col.names = c("\\textbf{mean $\\pm$ sd}", "\\textbf{stat}"),
-  algo.names = c("UNIF", "1BEX", "SGS", "USGS"),
-  algo.colors = algo.colors,
-  caption = "Mean, standard deviation~(\\textbf{sd}) and results of Wilcoxon-Mann-Whitney tests at significance level $\\alpha=0.01$ (\\textbf{stat}) with respect to HV-indicator and $\\varepsilon$-indicator respectively. Data is shown for all instances with at least 100 nodes. The \\textbf{stat}-column is to be read as follows: a value $X^{+}$ indicates that the indicator for the column algorithm (note that algorithms are numbered and color-encoded in the second row) is significantly lower than the one of algorithm $X$. Lowest indicator values are highlighted in \\textbf{bold-face}.") %>%
-  kable_styling() %>%
-  #row_spec(row = c(10, 20, 30, 70), extra_latex_after = "\\cmidrule{2-19}") %>%
-  collapse_rows(columns = 1, latex_hline = "major", valign = "middle") %>%
-  add_header_above(c(" ", " ", " ", "HV-indicator" = 8, "$\\\\varepsilon$-indicator" = 8), bold = TRUE, escape = FALSE)
-preview(ktbl)
-cat(ktbl, file = "tables/indicators_n_250.tex")
+for (i in ns) {
+  ktbl = to_latex(
+    filter(tbl.merged, n == i),
+    reps = 2L,
+    param.col.names = c("", "$n$", "$I$"),
+    measure.col.names = c("\\textbf{mean $\\pm$ sd}", "\\textbf{stat}"),
+    algo.names = c("UNIF", "1BEX", "SGS", "USGS"),
+    algo.colors = algo.colors,
+    caption = "Mean, standard deviation~(\\textbf{sd}) and results of Wilcoxon-Mann-Whitney tests at significance level $\\alpha=0.01$ (\\textbf{stat}) with respect to HV-indicator and $\\varepsilon$-indicator respectively. Data is shown for all instances with at least 100 nodes. The \\textbf{stat}-column is to be read as follows: a value $X^{+}$ indicates that the indicator for the column algorithm (note that algorithms are numbered and color-encoded in the second row) is significantly lower than the one of algorithm $X$. Lowest indicator values are highlighted in \\textbf{bold-face}.") %>%
+    kable_styling() %>%
+    #row_spec(row = c(10, 20, 30, 70), extra_latex_after = "\\cmidrule{2-19}") %>%
+    collapse_rows(columns = 1, latex_hline = "major", valign = "middle") %>%
+    add_header_above(c(" ", " ", " ", "HV-indicator" = 8, "$\\\\varepsilon$-indicator" = 8), bold = TRUE, escape = FALSE)
+  #preview(ktbl)
+  cat(ktbl, file = sprintf("tables/indicators_n_%i.tex", i))
+}
